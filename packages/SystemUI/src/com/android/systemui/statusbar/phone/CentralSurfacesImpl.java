@@ -510,6 +510,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     private final QuickAccessWalletController mWalletController;
 
+    protected com.android.systemui.statusbar.policy.GameSpaceManager mGameSpaceManager;
+
     /**
      * Public constructor for CentralSurfaces.
      *
@@ -751,6 +753,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
     @Override
     public void start() {
+        mGameSpaceManager = new com.android.systemui.statusbar.policy.GameSpaceManager(mContext, mKeyguardStateController);
+        mGameSpaceManager.observe();
         mScreenLifecycle.addObserver(mScreenObserver);
         mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
         mUiModeManager = mContext.getSystemService(UiModeManager.class);
@@ -2802,5 +2806,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     public ActivityTransitionAnimator.Controller getAnimatorControllerFromNotification(
             ExpandableNotificationRow associatedView) {
         return mNotificationAnimationProvider.getAnimatorController(associatedView);
+    }
+
+    @Override
+    public com.android.systemui.statusbar.policy.GameSpaceManager getGameSpaceManager() {
+        return mGameSpaceManager;
     }
 }
