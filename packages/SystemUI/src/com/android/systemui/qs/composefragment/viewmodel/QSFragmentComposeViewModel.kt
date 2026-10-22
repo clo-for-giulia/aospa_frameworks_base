@@ -369,10 +369,10 @@ constructor(
 
     private val qqsMediaExpansion: Float
         get() =
-            if (qqsMediaInRow && collapsedLandscapeMedia) {
-                MediaHostState.COLLAPSED
-            } else {
+            if (isInSplitShade) {
                 MediaHostState.EXPANDED
+            } else {
+                MediaHostState.COLLAPSED
             }
 
     private val shouldApplySquishinessToMedia by derivedStateOf {
