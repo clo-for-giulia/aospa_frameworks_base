@@ -71,6 +71,17 @@ public abstract class ChargingControlProvider {
     }
 
     /**
+     * Suspend this provider without resetting hardware charging state.
+     */
+    public final void suspend() {
+        if (!isEnabled) {
+            return;
+        }
+        isEnabled = false;
+        Log.i(TAG, getClass() + " is suspended");
+    }
+
+    /**
      * Return whether the provider is enabled
      */
     public final boolean isEnabled() {

@@ -28,6 +28,9 @@ import com.android.server.lineage.health.ccprovider.Deadline;
 import com.android.server.lineage.health.ccprovider.Limit;
 import com.android.server.lineage.health.ccprovider.Toggle;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 
 import android.provider.Settings;
@@ -65,6 +68,16 @@ public class ChargingControlController extends LineageHealthFeature {
             Settings.System.CHARGING_CONTROL_START_TIME);
     private final Uri TARGET_TIME_URI = Settings.System.getUriFor(
             Settings.System.CHARGING_CONTROL_TARGET_TIME);
+    private final Uri BYPASS_CHARGING_URI = Settings.System.getUriFor(
+            "bypass_charging_active");
+
+    private static final String BYPASS_CHARGE_NODE =
+            "/sys/class/oplus_chg/battery/mmi_charging_enable";
+    private static final String ACTION_BYPASS_CHARGE_SERVICE_CHANGED =
+            "com.android.bypasscharge.battery.BYPASS_CHARGE_SERVICE_CHANGED";
+    private static final String EXTRA_BYPASS_CHARGE_STATE = "bypasschargingenabled";
+
+    private boolean mIsBypassChargeActive = false;
 
     // Internal state
     private float mBatteryPct;
@@ -272,6 +285,27 @@ public class ChargingControlController extends LineageHealthFeature {
         updateBatteryInfo(batteryStatus);
     }
 
+    private boolean isBypassChargeActive() {
+        if (Settings.System.getInt(mContentResolver, "bypass_charging_active", 0) == 1) {
+            return true;
+        }
+        if (mIsBypassChargeActive) {
+            return true;
+        }
+        File node = new File(BYPASS_CHARGE_NODE);
+        if (node.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(node))) {
+                String line = reader.readLine();
+                if (line != null && line.trim().equals("0")) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onStart() {
         if (mChargingControl == null) {
@@ -279,7 +313,18 @@ public class ChargingControlController extends LineageHealthFeature {
         }
 
         // Register setting observer
-        registerSettings(MODE_URI, LIMIT_URI, ENABLED_URI, START_TIME_URI, TARGET_TIME_URI);
+        registerSettings(MODE_URI, LIMIT_URI, ENABLED_URI, START_TIME_URI, TARGET_TIME_URI,
+                BYPASS_CHARGING_URI);
+
+        IntentFilter bypassFilter = new IntentFilter(ACTION_BYPASS_CHARGE_SERVICE_CHANGED);
+        mContext.registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                mIsBypassChargeActive = intent.getBooleanExtra(EXTRA_BYPASS_CHARGE_STATE, false);
+                Log.i(TAG, "Bypass charge intent received, active=" + mIsBypassChargeActive);
+                updateChargeControl();
+            }
+        }, bypassFilter, Context.RECEIVER_EXPORTED);
 
         handleSettingChange();
     }
@@ -411,6 +456,12 @@ public class ChargingControlController extends LineageHealthFeature {
     }
 
     protected void updateChargeControl() {
+        if (isBypassChargeActive()) {
+            mCurrentProvider.suspend();
+            mChargingNotification.cancel();
+            return;
+        }
+
         if (!isEnabled() || mIsControlCancelledOnce || !mIsPowerConnected) {
             mCurrentProvider.disable();
             mChargingNotification.cancel();
