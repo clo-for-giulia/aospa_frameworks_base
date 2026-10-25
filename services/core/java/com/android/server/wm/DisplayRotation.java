@@ -965,7 +965,19 @@ public class DisplayRotation {
         freezeRotation(rotation, caller);
     }
 
+    private boolean isCameraRunning() {
+        final ActivityRecord top = mDisplayContent.topRunningActivity();
+        if (top != null && top.packageName != null) {
+            return "com.oplus.camera".equals(top.packageName)
+                    || "com.oneplus.camera".equals(top.packageName);
+        }
+        return false;
+    }
+
     boolean isFixedToUserRotation() {
+        if (isCameraRunning()) {
+            return false;
+        }
         switch (mFixedToUserRotation) {
             case IWindowManager.FIXED_TO_USER_ROTATION_DISABLED:
                 return false;
@@ -1110,6 +1122,10 @@ public class DisplayRotation {
      * screen is switched off.
      */
     private boolean needSensorRunning() {
+        if (isCameraRunning()) {
+            return true;
+        }
+
         if (isFixedToUserRotation()) {
             // We are sure we only respect user rotation settings, so we are sure we will not
             // support sensor rotation.
@@ -1283,12 +1299,14 @@ public class DisplayRotation {
                 preferredRotation = -1;
             }
         } else if (((mUserRotationMode == WindowManagerPolicy.USER_ROTATION_FREE
-                            || isTabletopAutoRotateOverrideEnabled())
+                            || isTabletopAutoRotateOverrideEnabled()
+                            || isCameraRunning())
                         && (orientation == ActivityInfo.SCREEN_ORIENTATION_USER
                                 || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                                 || orientation == ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
                                 || orientation == ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT
-                                || orientation == ActivityInfo.SCREEN_ORIENTATION_FULL_USER))
+                                || orientation == ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+                                || orientation == ActivityInfo.SCREEN_ORIENTATION_BEHIND))
                 || orientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR
                 || orientation == ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
                 || orientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
@@ -1304,6 +1322,7 @@ public class DisplayRotation {
                 preferredRotation = lastRotation;
             }
         } else if (mUserRotationMode == WindowManagerPolicy.USER_ROTATION_LOCKED
+                && !isCameraRunning()
                 && orientation != ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                 && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -1442,6 +1461,10 @@ public class DisplayRotation {
     }
 
     private boolean isRotationChoiceAllowed(@Surface.Rotation final int proposedRotation) {
+        if (isCameraRunning()) {
+            return false;
+        }
+
         final boolean isRotationLockEnforced = mCompatPolicyForImmersiveApps != null
                 && mCompatPolicyForImmersiveApps.isRotationLockEnforced(proposedRotation);
 
