@@ -34935,7 +34935,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 && !isInputMethodWindowType
                 && viewRootImpl.getFrameRateCompatibility() != FRAME_RATE_COMPATIBILITY_AT_LEAST) {
 
-            return FRAME_RATE_CATEGORY_HIGH_HINT | FRAME_RATE_CATEGORY_REASON_BOOST;
+            return FRAME_RATE_CATEGORY_HIGH | FRAME_RATE_CATEGORY_REASON_BOOST;
         }
         int category;
         switch (viewRootImpl.intermittentUpdateState()) {
@@ -35051,36 +35051,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
-        float density = mAttachInfo.mDensity;
-
-        if (frameRateMappingApi()) {
-            // Getting the frame rate / velocity mapping values
-            // from Display#getFrameRateVelocityMapping.
-            Display display = getDisplay();
-            List<FrameRateVelocityPoint> mapping = display != null
-                    ? display.getFrameRateVelocityMapping() : Collections.emptyList();
-            if (!mapping.isEmpty()) {
-                return getFrameRateByVelocity(mapping, velocityPps / density);
-            }
-        }
-
-        if (sFrameRateMappings != null && sFrameRateMappings.length > 0) {
-            return getFrameRateByVelocity(sFrameRateMappings, (int) velocityPps);
-        }
-        // Internal testing has shown that this gives a premium experience:
-        // above 300dp/s => 120fps
-        // between 300dp/s and 125fps => 80fps
-        // below 125dp/s => 60fps
-        float velocityDps = velocityPps / density;
-        float frameRate;
-        if (velocityDps > 300f) {
-            frameRate = MAX_FRAME_RATE; // Use maximum at fast motion
-        } else if (velocityDps > 125f) {
-            frameRate = 80f; // Use medium frame rate when motion is slower
-        } else {
-            frameRate = 60f; // Use minimum frame rate when motion is very slow
-        }
-        return frameRate;
+        return MAX_FRAME_RATE;
     }
 
     /**
