@@ -98,6 +98,9 @@ interface ConnectivityRepository {
      * eventually catch up and reflect what is represented here in the VcnTransportInfo.
      */
     val vcnSubId: StateFlow<Int?>
+
+    /** Observable for whether the data disabled / no internet indicator should be shown. */
+    val showDataDisabledIcon: StateFlow<Boolean>
 }
 
 @SuppressLint("MissingPermission")
@@ -149,6 +152,25 @@ constructor(
                 scope,
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = defaultHiddenIcons,
+            )
+
+    override val showDataDisabledIcon: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                val callback =
+                    object : TunerService.Tunable {
+                        override fun onTuningChanged(key: String, newValue: String?) {
+                            if (key == DATA_DISABLED_ICON_TUNABLE_KEY) {
+                                trySend(TunerService.parseIntegerSwitch(newValue, true))
+                            }
+                        }
+                    }
+                tunerService.addTunable(callback, DATA_DISABLED_ICON_TUNABLE_KEY)
+                awaitClose { tunerService.removeTunable(callback) }
+            }
+            .stateIn(
+                scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = true,
             )
 
     private val defaultNetworkCapabilities: SharedFlow<NetworkCapabilities?> =
@@ -342,6 +364,8 @@ constructor(
     }
 
     companion object {
+        internal const val DATA_DISABLED_ICON_TUNABLE_KEY = "status_bar_data_disabled"
+
         @VisibleForTesting
         internal const val HIDDEN_ICONS_TUNABLE_KEY = StatusBarIconController.ICON_HIDE_LIST
         @VisibleForTesting

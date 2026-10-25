@@ -120,6 +120,9 @@ interface MobileIconInteractorKairos {
      */
     val isRoaming: State<Boolean>
 
+    /** True if roaming icon should be shown (isRoaming and not force hidden). */
+    val showRoaming: State<Boolean>
+
     /** See [MobileIconsInteractor.isRoamingForceHidden]. */
     val isRoamingForceHidden: State<Boolean>
 
@@ -161,6 +164,7 @@ class MobileIconInteractorKairosImpl(
     override val isMobileHdForceHidden: State<Boolean>,
     override val isRoamingForceHidden: State<Boolean>,
     override val isVoWifiForceHidden: State<Boolean>,
+    private val showDataDisabledIcon: State<Boolean>,
     private val connectionRepository: MobileConnectionRepositoryKairos,
     private val context: Context,
     private val carrierIdOverrides: MobileIconCarrierIdOverrides =
@@ -278,7 +282,7 @@ class MobileIconInteractorKairosImpl(
             }
         }
 
-    private val showRoaming: State<Boolean> =
+    override val showRoaming: State<Boolean> =
         combine(
             isRoaming,
             isRoamingForceHidden
@@ -333,11 +337,13 @@ class MobileIconInteractorKairosImpl(
 
     /** Whether or not to show the error state of [SignalDrawable] for cellular connections */
     private val showExclamationMarkForCellular: State<Boolean> =
-        combine(defaultSubscriptionHasDataEnabled, isDefaultConnectionFailed, isInService) {
-            isDefaultDataEnabled,
+        combine(
+            defaultSubscriptionHasDataEnabled,
             isDefaultConnectionFailed,
-            isInService ->
-            !isDefaultDataEnabled || isDefaultConnectionFailed || !isInService
+            isInService,
+            showDataDisabledIcon,
+        ) { isDefaultDataEnabled, isDefaultConnectionFailed, isInService, showDataDisabled ->
+            showDataDisabled && (!isDefaultDataEnabled || isDefaultConnectionFailed || !isInService)
         }
 
     /** Whether or not to show the error state of [SignalDrawable] for satellite connections */

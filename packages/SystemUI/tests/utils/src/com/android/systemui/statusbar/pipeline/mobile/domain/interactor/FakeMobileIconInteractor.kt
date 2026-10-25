@@ -54,6 +54,8 @@ class FakeMobileIconInteractor(override val tableLogBuffer: TableLogBuffer) : Mo
 
     override val isRoaming = MutableStateFlow(false)
 
+    override val showRoaming = MutableStateFlow(false)
+
     override val isDataConnected = MutableStateFlow(true)
 
     override val isInService = MutableStateFlow(true)

@@ -468,6 +468,10 @@ constructor(
         }
     }
 
+    private val showDataDisabledIcon: State<Boolean> = buildState {
+        connectivityRepository.showDataDisabledIcon.toState()
+    }
+
     override val isDeviceInEmergencyCallsOnlyMode: State<Boolean>
         get() = mobileConnectionsRepo.isDeviceEmergencyCallCapable
 
@@ -488,6 +492,7 @@ constructor(
             isRoamingForceHidden,
             isMobileHdForceHidden,
             isVoWifiForceHidden,
+            showDataDisabledIcon,
             repo,
             context,
         )

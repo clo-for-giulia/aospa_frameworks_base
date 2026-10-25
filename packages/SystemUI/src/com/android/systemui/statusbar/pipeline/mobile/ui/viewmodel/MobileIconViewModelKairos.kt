@@ -334,7 +334,7 @@ private class CellularIconViewModelKairos(
         }
 
     override val roaming: KairosState<Boolean> =
-        iconInteractor.isRoaming.also {
+        iconInteractor.showRoaming.also {
             onActivated {
                 logDiffsForTable(
                     name = nameTag { "CellularIconViewModelKairos(subId=$subscriptionId).roaming" },

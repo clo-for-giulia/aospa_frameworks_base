@@ -124,6 +124,10 @@ fun BuildScope.MobileIconInteractorKairosAdapter(
                 isRoaming.toStateFlow(
                     nameTag { "MobileIconInteractorKairosAdapter(subId=$subscriptionId).isRoaming" }
                 ),
+            showRoaming =
+                showRoaming.toStateFlow(
+                    nameTag { "MobileIconInteractorKairosAdapter(subId=$subscriptionId).showRoaming" }
+                ),
             isRoamingForceHidden =
                 isRoamingForceHidden.toStateFlow(
                     name =
@@ -197,6 +201,7 @@ private class MobileIconInteractorKairosAdapter(
     override val carrierName: StateFlow<String>,
     override val isSingleCarrier: StateFlow<Boolean>,
     override val isRoaming: StateFlow<Boolean>,
+    override val showRoaming: StateFlow<Boolean>,
     override val isRoamingForceHidden: StateFlow<Boolean>,
     override val isForceHidden: StateFlow<Boolean>,
     override val isMobileHd: StateFlow<Boolean>,

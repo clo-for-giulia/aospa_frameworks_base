@@ -75,6 +75,9 @@ object MobileIconBinder {
         val mobileHdSpace = view.requireViewById<Space>(R.id.mobile_hd_space)
         val dotView = view.requireViewById<StatusBarIconView>(R.id.status_bar_dot)
         val volteView = view.requireViewById<ImageView>(R.id.mobile_volte)
+        val roamingView = view.findViewById<ImageView>(R.id.mobile_roaming)
+        val roamingUpdatedView = view.findViewById<ImageView>(R.id.mobile_roaming_updated)
+        val roamingSpace = view.findViewById<Space>(R.id.mobile_roaming_space)
         view.isVisible = viewModel.isVisible.value
         iconView.isVisible = true
         // TODO(b/238425913): We should log this visibility state.
@@ -223,6 +226,15 @@ object MobileIconBinder {
                         }
                     }
 
+                    // Set the roaming indicator
+                    launch {
+                        viewModel.roaming.distinctUntilChanged().collect { isRoaming ->
+                            roamingView?.isVisible = isRoaming
+                            roamingUpdatedView?.isVisible = isRoaming
+                            roamingSpace?.isVisible = isRoaming
+                        }
+                    }
+
                     // Set the activity indicators
                     launch { viewModel.activityInVisible.collect { activityIn.isVisible = it } }
 
@@ -247,6 +259,8 @@ object MobileIconBinder {
                                 networkTypeView.imageTintList = tint
                             }
                             mobileHdView.imageTintList = tint
+                            roamingView?.imageTintList = tint
+                            roamingUpdatedView?.imageTintList = tint
                             activityIn.imageTintList = tint
                             activityOut.imageTintList = tint
                             dotView.setDecorColor(colors.tint)

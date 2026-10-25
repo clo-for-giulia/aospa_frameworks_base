@@ -351,7 +351,7 @@ private class CellularIconViewModel(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
     override val roaming: StateFlow<Boolean> =
-        iconInteractor.isRoaming
+        iconInteractor.showRoaming
             .logDiffsForTable(
                 iconInteractor.tableLogBuffer,
                 columnName = "roaming",

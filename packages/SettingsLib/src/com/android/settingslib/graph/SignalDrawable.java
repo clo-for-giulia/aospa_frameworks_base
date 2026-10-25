@@ -194,7 +194,7 @@ public class SignalDrawable extends DrawableWrapper {
         int level = (packedState & LEVEL_MASK);
 
         if (newStatusBarIcons()) {
-            if (isInState(STATE_CUT)) {
+            if (isInState(STATE_CUT) || isInState(STATE_CUT_AND_R)) {
                 cutOutOffset = 20;
             }
         }

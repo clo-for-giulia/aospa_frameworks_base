@@ -140,6 +140,9 @@ interface MobileIconInteractor {
      */
     val isRoaming: Flow<Boolean>
 
+    /** True if roaming icon should be shown (isRoaming and not force hidden). */
+    val showRoaming: Flow<Boolean>
+
     /** See [MobileIconsInteractor.isRoamingForceHidden]. */
     val isRoamingForceHidden: Flow<Boolean>
 
@@ -620,7 +623,7 @@ class MobileIconInteractorImpl(
                 }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), 0)
-    private val showRoaming: StateFlow<Boolean> =
+    override val showRoaming: StateFlow<Boolean> =
         combine(
                 isRoaming,
                 isRoamingForceHidden

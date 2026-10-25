@@ -247,6 +247,7 @@ constructor(
             override val carrierName: Flow<String> = latest { carrierName }
             override val isSingleCarrier: Flow<Boolean> = latest { isSingleCarrier }
             override val isRoaming: Flow<Boolean> = latest { isRoaming }
+            override val showRoaming: Flow<Boolean> = latest { showRoaming }
             override val isForceHidden: Flow<Boolean> = latest { isForceHidden }
             override val isRoamingForceHidden: Flow<Boolean> = latest { isRoamingForceHidden }
             override val isMobileHd: Flow<Boolean> = latest { isMobileHd }

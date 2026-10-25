@@ -459,9 +459,14 @@ constructor(
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val hideNoInternetState: StateFlow<Boolean> =
-        mobileConnectionsRepo.defaultDataSubRatConfig
-            .mapDirect { it?.hideNoInternetState ?: false }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+        combine(
+            mobileConnectionsRepo.defaultDataSubRatConfig
+                .mapDirect { it?.hideNoInternetState ?: false },
+            connectivityRepository.showDataDisabledIcon,
+        ) { carrierHide, showDataDisabled ->
+            carrierHide || !showDataDisabled
+        }
+        .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val networkTypeIconCustomization: StateFlow<MobileIconCustomizationMode> =
         mobileConnectionsRepo.defaultDataSubRatConfig
