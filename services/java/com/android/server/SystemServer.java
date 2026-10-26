@@ -1859,7 +1859,9 @@ public final class SystemServer implements Dumpable {
             }
 
 // QTI_BEGIN: 2019-11-13: Core: Add mechanism to improve consistancy of notification
-            mSystemServiceManager.startService(ActivityTriggerService.class);
+            // Do not start ActivityTriggerService as ISnapdragonServices is unavailable on this device
+            // and causes an infinite 1-second timeout loop in EventHandlerThread.
+            // mSystemServiceManager.startService(ActivityTriggerService.class);
 
 // QTI_END: 2019-11-13: Core: Add mechanism to improve consistancy of notification
             if (Build.IS_DEBUGGABLE && ProfcollectForwardingService.enabled()) {
